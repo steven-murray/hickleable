@@ -3,6 +3,8 @@
 The primary function defined is :func:`hickleable`, a decorator to put on top of classes
 that usually magically makes them hickle-able (without resorting to pickling).
 """
+from __future__ import annotations
+
 import inspect
 import warnings
 from functools import cached_property
