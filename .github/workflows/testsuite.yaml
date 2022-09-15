@@ -27,7 +27,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Package and Test Deps
-        run: python -m pip install .[test]
+        run: |
+          echo $(which python)
+          python -m pip install .[test]
 
       - name: Run Tests
         run: |
