@@ -1,0 +1,19 @@
+channels:
+  - conda-forge
+  - nodefaults
+
+
+dependencies:
+  - pip
+  - python>=3.8
+  - h5py
+  - sphinx
+  - nbsphinx
+  - numpydoc
+  - ipython
+  - pip:
+    - numpy
+    - scipy
+    - cached_property
+    - healpy
+    - attrs

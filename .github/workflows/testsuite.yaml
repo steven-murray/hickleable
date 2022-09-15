@@ -1,0 +1,39 @@
+name: Test Suite
+on: [push, pull_request]
+
+
+jobs:
+  tests:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      ENV_NAME: testing
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.9, "3.10"]
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install Package and Test Deps
+        run: pip install .[test]
+
+      - name: Run Tests
+        run: |
+          python -m pytest --cov-config=.coveragerc --cov-report xml:./coverage.xml --junitxml=test-reports/xunit.xml
+
+      - uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          file: ./coverage.xml #optional
