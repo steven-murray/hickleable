@@ -11,9 +11,9 @@ from functools import cached_property
 from h5py import AttributeManager, Group
 from hickle.lookup import LoaderManager, PyContainer
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, List, Tuple
 
-DumpOutput = tuple[Group, list[tuple[str, Any, dict, dict]]]
+DumpOutput = Tuple[Group, List[Tuple[str, Any, dict, dict]]]
 DumpFunctionType = Callable[[Any, Group, str], DumpOutput]
 
 
