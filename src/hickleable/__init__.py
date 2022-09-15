@@ -3,9 +3,11 @@
 The primary function defined is :func:`hickleable`, a decorator to put on top of classes
 that usually magically makes them hickle-able (without resorting to pickling).
 """
+import inspect
 import warnings
+from functools import cached_property
 from h5py import AttributeManager, Group
-from hickle import LoaderManager, PyContainer
+from hickle.lookup import LoaderManager, PyContainer
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -18,6 +20,7 @@ def hickleable(
     dump_function: None | DumpFunctionType = None,
     load_container: None | Callable[[Any], PyContainer] | PyContainer = None,
     metadata_keys: Iterable[str] | None = None,
+    evaluate_cached_properties: bool = False,
     **kwargs,
 ):
     """Make a class dumpable/loadable by hickle, with sane defaults.
@@ -64,6 +67,9 @@ def hickleable(
     metadata_keys
         Any element of the object's state that should be treated as metadata, to be
         stored in the file's ``attrs`` dictionary instead of in datasets/subgroups
+    evaluate_cached_properties
+        Whether to force any cached properties to be evaluated before writing, so that
+        when reading they are pre-cached.
     """
 
     def inner(cls: type):
@@ -93,12 +99,22 @@ def hickleable(
                     state = py_obj.__dict__
 
                 for k in metadata_keys or []:
-                    try:
+                    if k in state:
                         ds.attrs[k] = state.pop(k)
-                    except KeyError:
+                    else:
                         warnings.warn(
                             f"Ignoring metadata key {k} since it's not in the object."
                         )
+
+                if evaluate_cached_properties:
+                    all_cached_properties = [
+                        name
+                        for name, value in inspect.getmembers(py_obj.__class__)
+                        if isinstance(value, cached_property)
+                    ]
+                    for cp in all_cached_properties:
+                        if cp not in state:
+                            state[cp] = getattr(py_obj, cp)
 
                 subitems = []
                 for k, v in state.items():
@@ -107,7 +123,7 @@ def hickleable(
                 return ds, subitems
 
         else:
-            _dump_function = dump_function
+            _dump_function = dump_function  # pragma: no cover
 
         if load_container is None:
 
@@ -130,7 +146,9 @@ def hickleable(
                     # __init__ method can be used to change the data structure used to
                     # store the subitems passed to the append method of the PyContainer
                     # class per default it is set to []
-                    super().__init__(h5_attrs, base_type, object_type, _content={})
+                    super().__init__(
+                        h5_attrs, base_type, object_type, _content=dict(h5_attrs)
+                    )
 
                 def append(self, name: str, item: Any, h5_attrs: AttributeManager):
                     """Add a particular item to the content defining the object.
@@ -184,19 +202,18 @@ def hickleable(
 
 # Make Path object dump well.
 def _path_dump_function(py_obj, h_group, name, **kwargs):
-    ds = h_group.create_dataset(name)
-    ds.attrs["path"] = str(py_obj)
+    ds = h_group.create_dataset(name, data=str(py_obj))
     return ds, ()
 
 
 def _load_path(h_node, base_type, py_obj_type):
     # py_obj_type should point to MyClass or any of its subclasses
-    return py_obj_type(h_node.attrs["path"])
+    return Path(h_node[()].decode())
 
 
 LoaderManager.register_class(
     Path,
     b"PosixPath",
     dump_function=_path_dump_function,
-    container_class=_load_path,
+    load_function=_load_path,
 )
