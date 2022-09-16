@@ -1,24 +1,17 @@
 .. include:: ../README.rst
-
-Contents
-========
+   :end-before: .. start-installation-section
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
 
+   Installation <installation>
+   Simple Usage <usage>
    License <license>
-   Usage <usage_overview>
    Tutorials <tutorials>
    API Reference <reference/index>
    Changelog <changelog>
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 .. _toctree: http://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html
 .. _reStructuredText: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html

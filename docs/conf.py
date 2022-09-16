@@ -131,10 +131,10 @@ pygments_style = "sphinx"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get("READTHEDOCS", None) == "True"
+# on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
-if not on_rtd:  # only set the theme if we're building docs locally
-    html_theme = "sphinx_rtd_theme"
+# if not on_rtd:  # only set the theme if we're building docs locally
+html_theme = "furo"
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
