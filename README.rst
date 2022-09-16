@@ -2,10 +2,10 @@
 hickleable
 ==========
 
-.. image:: https://codecov.io/gh/steven-murray/hickleable/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/steven-murray/hickleable/branch/main/graph/badge.svg?token=7TRaE5cJzZ
   :target: https://codecov.io/gh/steven-murray/hickleable
 .. image:: https://img.shields.io/pypi/l/hickleable?color=green
-   :alt: PyPI - License
+  :alt: PyPI - License
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :target: https://github.com/psf/black
 .. image:: https://readthedocs.org/projects/hickleable/badge/?version=latest
