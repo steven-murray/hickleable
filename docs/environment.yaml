@@ -11,9 +11,3 @@ dependencies:
   - nbsphinx
   - numpydoc
   - ipython
-  - pip:
-    - numpy
-    - scipy
-    - cached_property
-    - healpy
-    - attrs

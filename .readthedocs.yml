@@ -23,7 +23,7 @@ build:
       - conda list
 
 conda:
-  environment: docs/environment.yml
+  environment: docs/environment.yaml
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
