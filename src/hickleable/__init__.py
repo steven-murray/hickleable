@@ -93,6 +93,15 @@ def hickleable(
             def _dump_function(py_obj, h_group, name, **kwargs):
                 ds = h_group.create_group(name)
 
+                if evaluate_cached_properties:
+                    all_cached_properties = [
+                        name
+                        for name, value in inspect.getmembers(py_obj.__class__)
+                        if isinstance(value, cached_property)
+                    ]
+                    for cp in all_cached_properties:
+                        getattr(py_obj, cp)
+
                 if hasattr(py_obj, "__gethstate__"):
                     state = py_obj.__gethstate__()
                 elif hasattr(py_obj, "__getstate__"):
@@ -107,16 +116,6 @@ def hickleable(
                         warnings.warn(
                             f"Ignoring metadata key {k} since it's not in the object."
                         )
-
-                if evaluate_cached_properties:
-                    all_cached_properties = [
-                        name
-                        for name, value in inspect.getmembers(py_obj.__class__)
-                        if isinstance(value, cached_property)
-                    ]
-                    for cp in all_cached_properties:
-                        if cp not in state:
-                            state[cp] = getattr(py_obj, cp)
 
                 subitems = []
                 for k, v in state.items():
@@ -170,7 +169,7 @@ def hickleable(
                 def convert(self):
                     """Convert the content read from file to the object itself."""
                     # py_obj_type should point to MyClass or any of its subclasses
-                    new_instance = cls.__new__(cls)
+                    new_instance = self.object_type.__new__(self.object_type)
 
                     if hasattr(new_instance, "__sethstate__"):
                         new_instance.__sethstate__(self._content)
