@@ -2,6 +2,16 @@
 hickleable
 ==========
 
+.. image:: https://codecov.io/gh/steven-murray/hickleable/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/steven-murray/hickleable
+.. image:: https://img.shields.io/pypi/l/hickleable?color=green
+   :alt: PyPI - License
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/psf/black
+.. image:: https://readthedocs.org/projects/hickleable/badge/?version=latest
+  :target: https://hickleable.readthedocs.io/en/latest/?badge=latest
+  :alt: Documentation Status
+
 **A simple decorator to make your classes hickle-able.**
 
 
@@ -23,6 +33,8 @@ implement these hooks, as they are quite general.
 ``hickleable`` provides a "default implementation" of these hooks that should satisfy
 the requirements of most custom classes, and can be applied as a simple decorator.
 This makes it a one-liner to transform your class into a well-supported *data format*.
+
+Check out the docs at `ReadTheDocs <https://hickleable.readthedocs.io/en/latest/>`_.
 
 .. start-installation-section
 
