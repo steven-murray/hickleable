@@ -25,6 +25,7 @@ the requirements of most custom classes, and can be applied as a simple decorato
 This makes it a one-liner to transform your class into a well-supported *data format*.
 
 .. start-installation-section
+
 Installation
 ============
 
