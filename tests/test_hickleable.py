@@ -28,7 +28,7 @@ class FrozenWithCachedProperty:
 
     def __attrs_post_init__(self):
         if self.a == "warnme":
-            warnings.warn("warning you!")
+            warnings.warn("warning you!", stacklevel=2)
 
 
 @hickleable(evaluate_cached_properties=True)
