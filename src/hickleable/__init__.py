@@ -5,6 +5,7 @@ that usually magically makes them hickle-able (without resorting to pickling).
 """
 from __future__ import annotations
 
+import hickle
 import inspect
 import warnings
 from functools import cached_property
@@ -15,6 +16,11 @@ from typing import Any, Callable, Iterable, List, Tuple
 
 DumpOutput = Tuple[Group, List[Tuple[str, Any, dict, dict]]]
 DumpFunctionType = Callable[[Any, Group, str], DumpOutput]
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 
 def hickleable(
@@ -114,7 +120,8 @@ def hickleable(
                         ds.attrs[k] = state.pop(k)
                     else:
                         warnings.warn(
-                            f"Ignoring metadata key {k} since it's not in the object."
+                            f"Ignoring metadata key {k} since it's not in the object.",
+                            stacklevel=2,
                         )
 
                 subitems = []
@@ -218,3 +225,11 @@ LoaderManager.register_class(
     dump_function=_path_dump_function,
     load_function=_load_path,
 )
+
+if yaml is not None:
+    # Register a YAML loader for hickle-dumped files.
+    def _hickle_yaml_loader(path):
+        return hickle.load(path)
+
+    yaml.add_constructor("!hickle", _hickle_yaml_loader, Loader=yaml.FullLoader)
+    yaml.add_constructor("!hickle", _hickle_yaml_loader, Loader=yaml.Loader)
