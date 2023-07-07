@@ -114,7 +114,8 @@ def hickleable(
                         ds.attrs[k] = state.pop(k)
                     else:
                         warnings.warn(
-                            f"Ignoring metadata key {k} since it's not in the object."
+                            f"Ignoring metadata key {k} since it's not in the object.",
+                            stacklevel=2,
                         )
 
                 subitems = []
