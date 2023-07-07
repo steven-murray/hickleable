@@ -1,12 +1,10 @@
-name: Publish Python distributions to PyPI
+name: Check Distribution Build
 
-on:
-  release:
-    types: [published]
+on: push
 
 jobs:
-  build-n-publish:
-    name: Make Release on PyPI and Github
+  check-build:
+    name: Twine Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -18,13 +16,12 @@ jobs:
           python-version: "3.10"
 
       - name: Install Build Tools
-        run: pip install build
+        run: pip install build twine
 
       - name: Build a binary wheel
         run: |
           python -m build .
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.pypi_password }}
+      - name: Check Distribution
+        run: |
+          twine check dist/*
