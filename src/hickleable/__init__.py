@@ -14,6 +14,11 @@ from hickle.lookup import LoaderManager, PyContainer
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Tuple
 
+try:
+    import attrs
+except ImportError:
+    attrs = None
+
 DumpOutput = Tuple[Group, List[Tuple[str, Any, dict, dict]]]
 DumpFunctionType = Callable[[Any, Group, str], DumpOutput]
 
@@ -21,6 +26,60 @@ try:
     import yaml
 except ImportError:
     yaml = None
+
+
+class _LoadContainer(PyContainer):  # noqa: N801
+    def __init__(self, h5_attrs: dict, base_type: str, object_type: Any):
+        """The load container.
+
+        Parameters
+        ----------
+        h5_attrs
+            the attrs dictionary attached to the group representing the
+            custom class.
+        base_type
+            byte string naming the loader to be used for restoring the
+            custom class object
+        py_obj_type
+            Custom class (or subclass)
+        """
+        # the optional protected _content parameter of the PyContainer
+        # __init__ method can be used to change the data structure used to
+        # store the subitems passed to the append method of the PyContainer
+        # class per default it is set to []
+        super().__init__(h5_attrs, base_type, object_type, _content=dict(h5_attrs))
+
+    def append(self, name: str, item: Any, h5_attrs: AttributeManager):
+        """Add a particular item to the content defining the object.
+
+        Parameters
+        ----------
+        name
+            Identifies the subitem within the parent ``hdf5.Group``
+        item
+            The object representing the subitem
+        h5_attrs
+            An ``attrs`` dictionary attached to the ``h5py.Dataset`` or
+            ``h5py.Group`` representing the item.
+        """
+        self._content[name] = item
+
+    def convert(self):
+        """Convert the content read from file to the object itself."""
+        # py_obj_type should point to MyClass or any of its subclasses
+        new_instance = self.object_type.__new__(self.object_type)
+
+        if hasattr(new_instance, "__sethstate__"):
+            new_instance.__sethstate__(self._content)
+        elif hasattr(new_instance, "__setstate__"):
+            new_instance.__setstate__(self._content)
+        else:
+            new_instance.__dict__.update(self._content)
+
+        if hasattr(new_instance, "__attrs_post_init__"):
+            new_instance.__attrs_post_init__()
+
+        return new_instance
 
 
 def hickleable(
@@ -112,8 +171,12 @@ def hickleable(
                     state = py_obj.__gethstate__()
                 elif hasattr(py_obj, "__getstate__"):
                     state = py_obj.__getstate__()
-                else:
+                elif py_obj.__dict__ is not None:
                     state = py_obj.__dict__
+                elif attrs is not None and attrs.has(py_obj):
+                    state = attrs.asdict(py_obj)
+                else:
+                    state = {}
 
                 for k in metadata_keys or []:
                     if k in state:
@@ -134,62 +197,7 @@ def hickleable(
             _dump_function = dump_function  # pragma: no cover
 
         if load_container is None:
-
-            class _load_container(PyContainer):  # noqa: N801
-                def __init__(self, h5_attrs: dict, base_type: str, object_type: Any):
-                    """The load container.
-
-                    Parameters
-                    ----------
-                    h5_attrs
-                        the attrs dictionary attached to the group representing the
-                        custom class.
-                    base_type
-                        byte string naming the loader to be used for restoring the
-                        custom class object
-                    py_obj_type
-                        Custom class (or subclass)
-                    """
-                    # the optional protected _content parameter of the PyContainer
-                    # __init__ method can be used to change the data structure used to
-                    # store the subitems passed to the append method of the PyContainer
-                    # class per default it is set to []
-                    super().__init__(
-                        h5_attrs, base_type, object_type, _content=dict(h5_attrs)
-                    )
-
-                def append(self, name: str, item: Any, h5_attrs: AttributeManager):
-                    """Add a particular item to the content defining the object.
-
-                    Parameters
-                    ----------
-                    name
-                        Identifies the subitem within the parent ``hdf5.Group``
-                    item
-                        The object representing the subitem
-                    h5_attrs
-                        An ``attrs`` dictionary attached to the ``h5py.Dataset`` or
-                        ``h5py.Group`` representing the item.
-                    """
-                    self._content[name] = item
-
-                def convert(self):
-                    """Convert the content read from file to the object itself."""
-                    # py_obj_type should point to MyClass or any of its subclasses
-                    new_instance = self.object_type.__new__(self.object_type)
-
-                    if hasattr(new_instance, "__sethstate__"):
-                        new_instance.__sethstate__(self._content)
-                    elif hasattr(new_instance, "__setstate__"):
-                        new_instance.__setstate__(self._content)
-                    else:
-                        new_instance.__dict__.update(self._content)
-
-                    if hasattr(new_instance, "__attrs_post_init__"):
-                        new_instance.__attrs_post_init__()
-
-                    return new_instance
-
+            _load_container = _LoadContainer
         else:
             _load_container = (
                 load_container(cls) if callable(load_container) else load_container
