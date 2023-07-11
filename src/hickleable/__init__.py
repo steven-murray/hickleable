@@ -244,8 +244,8 @@ LoaderManager.register_class(
 
 if yaml is not None:
     # Register a YAML loader for hickle-dumped files.
-    def _hickle_yaml_loader(path):
-        return hickle.load(path)
+    def _hickle_yaml_loader(loader: yaml.SafeLoader, node):
+        return hickle.load(node.value)
 
     yaml.add_constructor("!hickle", _hickle_yaml_loader, Loader=yaml.FullLoader)
     yaml.add_constructor("!hickle", _hickle_yaml_loader, Loader=yaml.Loader)
