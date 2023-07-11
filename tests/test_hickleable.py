@@ -179,3 +179,29 @@ def test_attrs_post_init(tmpdir):
 
     with pytest.warns(UserWarning, match="warning you!"):
         hickle.load(fl)
+
+
+@hickleable()
+class ClassWithBadGetState:
+    def __getstate__(self):
+        return 1
+
+
+def test_bad_getstate(tmpdir):
+    a = ClassWithBadGetState()
+
+    with pytest.raises(TypeError, match="__getstate__ must return a dictionary"):
+        hickle.dump(a, tmpdir / "test.h5")
+
+
+@hickleable()
+class ClassWithBadGetHState:
+    def __gethstate__(self):
+        return 1
+
+
+def test_bad_gethstate(tmpdir):
+    a = ClassWithBadGetHState()
+
+    with pytest.raises(TypeError, match="__gethstate__ must return a dictionary"):
+        hickle.dump(a, tmpdir / "test.h5")
