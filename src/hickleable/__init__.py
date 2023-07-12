@@ -169,8 +169,16 @@ def hickleable(
 
                 if hasattr(py_obj, "__gethstate__"):
                     state = py_obj.__gethstate__()
+                    if not isinstance(state, dict):
+                        raise TypeError(
+                            f"__gethstate__ must return a dictionary. Got {state} with type {type(state)} from {type(py_obj)}."
+                        )
                 elif hasattr(py_obj, "__getstate__"):
                     state = py_obj.__getstate__()
+                    if not isinstance(state, dict):
+                        raise TypeError(
+                            f"__getstate__ must return a dictionary. Got {state} with type {type(state)} from {type(py_obj)}."
+                        )
                 elif py_obj.__dict__ is not None:
                     state = py_obj.__dict__
                 elif attrs is not None and attrs.has(py_obj):
