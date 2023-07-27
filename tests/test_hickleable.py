@@ -205,3 +205,24 @@ def test_bad_gethstate(tmpdir):
 
     with pytest.raises(TypeError, match="__gethstate__ must return a dictionary"):
         hickle.dump(a, tmpdir / "test.h5")
+
+
+@hickleable()
+class Nester:
+    def __init__(self, a):
+        self.a = a
+
+    def __gethstate__(self):
+        return self.__dict__
+
+    def __sethstate__(self, hstate):
+        self.__dict__.update(hstate)
+
+
+def test_nested_with_sethstate(tmpdir):
+    nested = Nester(Nester(3))
+
+    hickle.dump(nested, tmpdir / "test.h5")
+    new_nested = hickle.load(tmpdir / "test.h5")
+
+    assert new_nested.a.a == 3
