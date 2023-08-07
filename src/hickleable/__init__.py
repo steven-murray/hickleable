@@ -47,7 +47,9 @@ class _LoadContainer(PyContainer):  # noqa: N801
         # __init__ method can be used to change the data structure used to
         # store the subitems passed to the append method of the PyContainer
         # class per default it is set to []
-        super().__init__(h5_attrs, base_type, object_type, _content=dict(h5_attrs))
+        _content = {k: v for k, v in h5_attrs.items() if k != "type"}
+
+        super().__init__(h5_attrs, base_type, object_type, _content=_content)
 
     def append(self, name: str, item: Any, h5_attrs: AttributeManager):
         """Add a particular item to the content defining the object.
