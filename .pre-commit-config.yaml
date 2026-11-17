@@ -2,7 +2,7 @@ exclude: '^docs/conf.py'
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: trailing-whitespace
   - id: check-added-large-files
@@ -17,7 +17,7 @@ repos:
     args: ['--fix=no']
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 7.3.0
+  rev: 7.5.0
   hooks:
   - id: flake8
     additional_dependencies:
@@ -36,15 +36,18 @@ repos:
       - flake8-bugbear
       - flake8-comprehensions
       - flake8-print
+      # flake8-logging-format imports pkg_resources, which was removed from
+      # setuptools>=82 and is not bundled with Python 3.12+.
+      - setuptools<82
 
 
-- repo: https://github.com/psf/black
-  rev: 25.1.0
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 26.10.1
   hooks:
   - id: black
 
 - repo: https://github.com/PyCQA/isort
-  rev: 6.0.1
+  rev: 10.0.0b3
   hooks:
   - id: isort
 
@@ -54,7 +57,7 @@ repos:
     - id: rst-backticks
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.20.0
+  rev: v3.22.0
   hooks:
   -   id: pyupgrade
       args: [--py38-plus]
