@@ -36,6 +36,9 @@ repos:
       - flake8-bugbear
       - flake8-comprehensions
       - flake8-print
+      # flake8-logging-format imports pkg_resources, which was removed from
+      # setuptools>=82 and is not bundled with Python 3.12+.
+      - setuptools<82
 
 
 - repo: https://github.com/psf/black-pre-commit-mirror
